@@ -4,12 +4,13 @@ import {
   ApiHideProperty,
   ApiProperty,
 } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 
 const enabled = process.env.FF_ENABLED === 'true';
 
 const FeatureProperty = (...args) => {
-  switch (process.env.FF_ENABLED) {
-    case 'false':
+  switch (enabled) {
+    case false:
       return ApiHideProperty();
     default:
       return ApiProperty(...args);
@@ -19,9 +20,14 @@ const FeatureProperty = (...args) => {
 class Person {
   @ApiProperty()
   name: string;
+
   @ApiProperty()
+  @IsString()
   surname: string;
+
   @FeatureProperty()
+  @ValidateIf(() => enabled)
+  @IsNotEmpty()
   passportNumber: string; // only enabled if process.env.FF_PASSPORT === true
 }
 
